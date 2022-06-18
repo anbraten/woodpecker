@@ -13,9 +13,11 @@
         <div id="terminal" class="w-full h-full" />
       </div>
 
-      <div class="m-auto text-xl text-gray-500 dark:text-gray-500">
-        <span v-if="proc?.error" class="text-red-400">{{ proc.error }}</span>
-        <span v-else-if="proc?.state === 'skipped'" class="text-red-400">{{ $t('repo.build.actions.canceled') }}</span>
+      <div class="m-auto flex items-center justify-center text-xl text-gray-500 dark:text-gray-500 p-4">
+        <span v-if="proc?.error" class="text-red-600 dark:text-red-400 max-w-256">{{ proc.error }}</span>
+        <span v-else-if="proc?.state === 'skipped'" class="text-red-600 dark:text-red-400">{{
+          $t('repo.build.actions.canceled')
+        }}</span>
         <span v-else-if="!proc?.start_time">{{ $t('repo.build.step_not_started') }}</span>
         <div v-else-if="!loadedLogs">{{ $t('repo.build.loading') }}</div>
       </div>
@@ -23,6 +25,7 @@
       <div
         v-if="proc?.end_time !== undefined"
         class="w-full bg-gray-400 dark:bg-dark-gray-800 text-gray-200 text-md p-4"
+        :class="proc.exit_code === 0 ? 'text-lime-400' : 'dark:text-red-400 text-red-600'"
       >
         {{ $t('repo.build.exit_code', { exitCode: proc.exit_code }) }}
       </div>
@@ -101,7 +104,7 @@ export default defineComponent({
     );
     const fitAddon = ref(new FitAddon());
     const loadedLogs = ref(true);
-    const autoScroll = ref(true); // TODO
+    const autoScroll = ref(true); // TODO: allow user to switch on & off
 
     async function loadLogs() {
       if (loadedProcSlug.value === procSlug.value) {
@@ -126,7 +129,8 @@ export default defineComponent({
         !build.value ||
         !proc.value ||
         proc.value.state === 'skipped' ||
-        proc.value.state === 'killed'
+        proc.value.state === 'killed' ||
+        proc.value.error
       ) {
         return;
       }
