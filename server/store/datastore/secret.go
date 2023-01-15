@@ -25,6 +25,10 @@ import (
 const orderSecretsBy = "secret_name"
 
 func (s storage) secretDecrypt(secret *model.Secret) error {
+	if s.encryption == nil {
+		return nil
+	}
+
 	decryptedValue, err := s.encryption.Decrypt(secret.Value, strconv.Itoa(int(secret.ID)))
 	if err != nil {
 		return err
@@ -36,6 +40,10 @@ func (s storage) secretDecrypt(secret *model.Secret) error {
 }
 
 func (s storage) secretEncrypt(secret *model.Secret) error {
+	if s.encryption == nil {
+		return nil
+	}
+
 	encryptedValue, err := s.encryption.Encrypt(secret.Value, strconv.Itoa(int(secret.ID)))
 	if err != nil {
 		return err

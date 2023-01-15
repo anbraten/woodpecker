@@ -14,8 +14,11 @@
 
 package store
 
+import "github.com/woodpecker-ci/woodpecker/server/store/encryption"
+
 // Opts are options for a new database connection
 type Opts struct {
-	Driver string
-	Config string
+	Driver     string
+	Config     string
+	Encryption encryption.EncryptionService
 }

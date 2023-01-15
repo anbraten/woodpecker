@@ -12,32 +12,48 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package aes
+package encryption
 
 import (
+	"crypto/aes"
 	"crypto/cipher"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 
 	"github.com/google/tink/go/subtle/random"
-
-	"github.com/woodpecker-ci/woodpecker/server/model"
-	"github.com/woodpecker-ci/woodpecker/server/store"
 )
 
-type aesEncryptionService struct {
-	cipher  cipher.AEAD
-	keyID   string
-	store   store.Store
-	clients []model.EncryptionClient
+type AESEncryption struct {
+	cipher     cipher.AEAD
+	privateKey string
 }
 
-func (svc *aesEncryptionService) Encrypt(plaintext, associatedData string) (string, error) {
+func NewAESEncryptionService(privateKey string) EncryptionService {
+	return &AESEncryption{
+		privateKey: privateKey,
+	}
+}
+
+func (a AESEncryption) Init() error {
+	key, _ := hex.DecodeString(a.privateKey)
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return err
+	}
+
+	a.cipher, err = cipher.NewGCM(block)
+
+	return nil
+}
+
+func (a *AESEncryption) Encrypt(plaintext, associatedData string) (string, error) {
 	msg := []byte(plaintext)
 	aad := []byte(associatedData)
 
 	nonce := random.GetRandomBytes(uint32(AESGCMSIVNonceSize))
-	ciphertext := svc.cipher.Seal(nil, nonce, msg, aad)
+	ciphertext := a.cipher.Seal(nil, nonce, msg, aad)
 
 	result := make([]byte, 0, AESGCMSIVNonceSize+len(ciphertext))
 	result = append(result, nonce...)
@@ -46,7 +62,7 @@ func (svc *aesEncryptionService) Encrypt(plaintext, associatedData string) (stri
 	return base64.StdEncoding.EncodeToString(result), nil
 }
 
-func (svc *aesEncryptionService) Decrypt(ciphertext, associatedData string) (string, error) {
+func (a *AESEncryption) Decrypt(ciphertext, associatedData string) (string, error) {
 	bytes, err := base64.StdEncoding.DecodeString(ciphertext)
 	if err != nil {
 		return "", fmt.Errorf(errTemplateBase64DecryptionFailed, err)
@@ -55,13 +71,9 @@ func (svc *aesEncryptionService) Decrypt(ciphertext, associatedData string) (str
 	nonce := bytes[:AESGCMSIVNonceSize]
 	message := bytes[AESGCMSIVNonceSize:]
 
-	plaintext, err := svc.cipher.Open(nil, nonce, message, []byte(associatedData))
+	plaintext, err := a.cipher.Open(nil, nonce, message, []byte(associatedData))
 	if err != nil {
 		return "", fmt.Errorf(errTemplateDecryptionFailed, err)
 	}
 	return string(plaintext), nil
-}
-
-func (svc *aesEncryptionService) Disable() error {
-	return svc.disable()
 }

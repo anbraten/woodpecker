@@ -50,6 +50,12 @@ func (s storage) Ping() error {
 
 // Migrate old storage or init new one
 func (s storage) Migrate() error {
+	// if s.encryption != nil {
+	// 	if err := s.encryption.Migrate(s); err != nil {
+	// 		return err
+	// 	}
+	// }
+
 	return migration.Migrate(s.engine)
 }
 

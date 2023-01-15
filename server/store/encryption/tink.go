@@ -15,31 +15,25 @@
 package encryption
 
 import (
+	"encoding/base64"
 	"fmt"
 
-	"github.com/urfave/cli/v2"
-
-	"github.com/woodpecker-ci/woodpecker/server/model"
-	"github.com/woodpecker-ci/woodpecker/server/store"
+	"github.com/fsnotify/fsnotify"
+	"github.com/google/tink/go/tink"
 )
 
-type tinkConfiguration struct {
-	keysetFilePath string
-	store          store.Store
-	clients        []model.EncryptionClient
+type TinkEncryption struct {
+	keysetFilePath    string
+	primaryKeyID      string
+	encryption        tink.AEAD
+	keysetFileWatcher *fsnotify.Watcher
 }
 
-func newTink(ctx *cli.Context, s store.Store) model.EncryptionServiceBuilder {
-	filepath := ctx.String(tinkKeysetFilepathConfigFlag)
-	return &tinkConfiguration{filepath, s, nil}
+func NewTinkEncryption(keysetFilePath string) *TinkEncryption {
+	return &TinkEncryption{keysetFilePath: keysetFilePath}
 }
 
-func (c tinkConfiguration) WithClients(clients []model.EncryptionClient) model.EncryptionServiceBuilder {
-	c.clients = clients
-	return c
-}
-
-func (c tinkConfiguration) Build() (model.EncryptionService, error) {
+func (t *TinkEncryption) Build() error {
 	svc := &tinkEncryptionService{
 		keysetFilePath:    c.keysetFilePath,
 		primaryKeyID:      "",
@@ -74,4 +68,27 @@ func (c tinkConfiguration) Build() (model.EncryptionService, error) {
 		return nil, fmt.Errorf(errTemplateTinkFailedInitializeFileWatcher, err)
 	}
 	return svc, nil
+}
+
+func (t *TinkEncryption) Encrypt(plaintext, associatedData string) (string, error) {
+	msg := []byte(plaintext)
+	aad := []byte(associatedData)
+	ciphertext, err := t.encryption.Encrypt(msg, aad)
+	if err != nil {
+		return "", fmt.Errorf(errTemplateEncryptionFailed, err)
+	}
+	return base64.StdEncoding.EncodeToString(ciphertext), nil
+}
+
+func (t *TinkEncryption) Decrypt(ciphertext, associatedData string) (string, error) {
+	ct, err := base64.StdEncoding.DecodeString(ciphertext)
+	if err != nil {
+		return "", fmt.Errorf(errTemplateBase64DecryptionFailed, err)
+	}
+
+	plaintext, err := svc.encryption.Decrypt(ct, []byte(associatedData))
+	if err != nil {
+		return "", fmt.Errorf(errTemplateDecryptionFailed, err)
+	}
+	return string(plaintext), nil
 }

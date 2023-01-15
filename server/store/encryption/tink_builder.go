@@ -14,20 +14,25 @@
 
 package encryption
 
-type NoEncryption struct{}
+import (
+	"github.com/urfave/cli/v2"
 
-func NewNoEncryption() *NoEncryption {
-	return &NoEncryption{}
+	"github.com/woodpecker-ci/woodpecker/server/model"
+	"github.com/woodpecker-ci/woodpecker/server/store"
+)
+
+type tinkConfiguration struct {
+	keysetFilePath string
+	store          store.Store
+	clients        []model.EncryptionClient
 }
 
-func (e *NoEncryption) Init() error {
-	return nil
+func newTink(ctx *cli.Context, s store.Store) model.EncryptionServiceBuilder {
+	filepath := ctx.String(tinkKeysetFilepathConfigFlag)
+	return &tinkConfiguration{filepath, s, nil}
 }
 
-func (e *NoEncryption) Encrypt(plaintext, _ string) (string, error) {
-	return plaintext, nil
-}
-
-func (e *NoEncryption) Decrypt(ciphertext, _ string) (string, error) {
-	return ciphertext, nil
+func (c tinkConfiguration) WithClients(clients []model.EncryptionClient) model.EncryptionServiceBuilder {
+	c.clients = clients
+	return c
 }

@@ -305,11 +305,6 @@ Read the value for `WOODPECKER_ENCRYPTION_KEY` from the specified filepath
 
 Filepath to encryption keyset used to encrypt secrets in DB. See [secrets encryption](./40-encryption.md)
 
-### `WOODPECKER_ENCRYPTION_DISABLE`
-> Default: empty
-
-Boolean flag to decrypt secrets in DB and disable server encryption. See [secrets encryption](./40-encryption.md)
-
 ### `WOODPECKER_PROMETHEUS_AUTH_TOKEN`
 > Default: empty
 

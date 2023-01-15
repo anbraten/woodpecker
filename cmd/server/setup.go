@@ -79,23 +79,24 @@ func setupStore(c *cli.Context) (store.Store, error) {
 		}
 	}
 
+	var encryptionService encryption.EncryptionService
+	if c.String("encryption-key") != "" {
+		encryptionService = encryption.NewAESEncryptionService(c.String("encryption-key"))
+	} else if c.String("tink-keyset") != "" {
+		encryptionService = &encryption.NoEncryption{}
+	} else {
+		encryptionService = encryption.NewNoEncryption()
+	}
+
 	opts := &store.Opts{
-		Driver: driver,
-		Config: datasource,
+		Driver:     driver,
+		Config:     datasource,
+		Encryption: encryptionService,
 	}
 	log.Trace().Msgf("setup datastore: %#v", *opts)
 	store, err := datastore.NewEngine(opts)
 	if err != nil {
 		log.Fatal().Err(err).Msg("could not open datastore")
-	}
-
-	// load store encryption if aes or tink key wass provided
-	if c.String("encryption-key") != "" {
-		store = encryption.NewEncryptedStore(store)
-		err := encryption.Encryption(c, store).WithClient(encryptedSecretStore).Build()
-		if err != nil {
-			log.Fatal().Err(err).Msg("could not create encryption service")
-		}
 	}
 
 	if err := store.Migrate(); err != nil {

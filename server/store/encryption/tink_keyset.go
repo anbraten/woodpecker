@@ -28,16 +28,16 @@ import (
 	"github.com/woodpecker-ci/woodpecker/server/store/types"
 )
 
-func (svc *tinkEncryptionService) loadKeyset() error {
-	log.Warn().Msgf(logTemplateTinkLoadingKeyset, svc.keysetFilePath)
-	file, err := os.Open(svc.keysetFilePath)
+func (t *TinkEncryption) loadKeyset() error {
+	log.Warn().Msgf(logTemplateTinkLoadingKeyset, t.keysetFilePath)
+	file, err := os.Open(t.keysetFilePath)
 	if err != nil {
 		return fmt.Errorf(errTemplateTinkFailedOpeningKeyset, err)
 	}
 	defer func(file *os.File) {
 		err = file.Close()
 		if err != nil {
-			log.Err(err).Msgf(logTemplateTinkFailedClosingKeysetFile, svc.keysetFilePath)
+			log.Err(err).Msgf(logTemplateTinkFailedClosingKeysetFile, t.keysetFilePath)
 		}
 	}(file)
 
@@ -46,26 +46,26 @@ func (svc *tinkEncryptionService) loadKeyset() error {
 	if err != nil {
 		return fmt.Errorf(errTemplateTinkFailedReadingKeyset, err)
 	}
-	svc.primaryKeyID = strconv.FormatUint(uint64(keysetHandle.KeysetInfo().PrimaryKeyId), 10)
+	t.primaryKeyID = strconv.FormatUint(uint64(keysetHandle.KeysetInfo().PrimaryKeyId), 10)
 
 	encryptionInstance, err := aead.New(keysetHandle)
 	if err != nil {
 		return fmt.Errorf(errTemplateTinkFailedInitializingAEAD, err)
 	}
-	svc.encryption = encryptionInstance
+	t.encryption = encryptionInstance
 	return nil
 }
 
-func (svc *tinkEncryptionService) validateKeyset() error {
-	ciphertextSample, err := svc.store.ServerConfigGet(ciphertextSampleConfigKey)
+func (t *TinkEncryption) validateKeyset() error {
+	ciphertextSample, err := t.store.ServerConfigGet(ciphertextSampleConfigKey)
 	if errors.Is(err, types.RecordNotExist) {
 		return errEncryptionNotEnabled
 	} else if err != nil {
 		return fmt.Errorf(errTemplateFailedLoadingServerConfig, err)
 	}
 
-	plaintext, err := svc.Decrypt(ciphertextSample, keyIDAssociatedData)
-	if plaintext != svc.primaryKeyID {
+	plaintext, err := t.Decrypt(ciphertextSample, keyIDAssociatedData)
+	if plaintext != t.primaryKeyID {
 		return errEncryptionKeyRotated
 	} else if err != nil {
 		return fmt.Errorf(errTemplateFailedValidatingKey, err)
