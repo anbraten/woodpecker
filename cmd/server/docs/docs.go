@@ -252,7 +252,7 @@ const docTemplate = `{
         },
         "/badges/{owner}/{name}/cc.xml": {
             "get": {
-                "description": "CCMenu displays the pipeline status of projects on a CI server as an item in the Mac's menu bar.\nIt started as part of the CruiseControl project that built the first continuous integration server.\nMore details on how to install, you can find at http://ccmenu.org/\nThe response format adheres to CCTray v1 Specification, https://cctray.org/v1/",
+                "description": "CCMenu displays the pipeline status of projects on a CI server as an item in the Mac's menu bar.\nMore details on how to install, you can find at http://ccmenu.org/\nThe response format adheres to CCTray v1 Specification, https://cctray.org/v1/",
                 "produces": [
                     "text/xml"
                 ],
@@ -639,10 +639,10 @@ const docTemplate = `{
                 "tags": [
                     "System"
                 ],
-                "summary": "Incoming webhook from Github or Gitea",
+                "summary": "Incoming webhook from forge",
                 "parameters": [
                     {
-                        "description": "the webhook payload; Github or Gitea is automatically detected",
+                        "description": "the webhook payload; forge is automatically detected",
                         "name": "hook",
                         "in": "body",
                         "required": true,
@@ -1051,7 +1051,7 @@ const docTemplate = `{
         },
         "/queue/info": {
             "get": {
-                "description": "TODO: link the InfoT response object - this is blocked, until this swag-issue is solved ...",
+                "description": "TODO: link the InfoT response object - this is blocked, until the ` + "`" + `swaggo/swag` + "`" + ` tool dependency is v1.18.12 or newer",
                 "produces": [
                     "application/json"
                 ],
