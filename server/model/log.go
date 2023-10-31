@@ -15,14 +15,10 @@
 package model
 
 // LogEntryType identifies the type of line in the logs.
-type LogEntryType int // @name	LogEntryType
+type LogEntryType string // @name	LogEntryType
 
 const (
-	LogEntryStdout LogEntryType = iota
-	LogEntryStderr
-	LogEntryExitCode
-	LogEntryMetadata
-	LogEntryProgress
+	LogEntryStdout string = "stdout"
 )
 
 type LogEntry struct {

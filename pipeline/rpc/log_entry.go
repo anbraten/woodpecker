@@ -28,29 +28,20 @@ import (
 
 // Identifies the type of line in the logs.
 const (
-	LogEntryStdout int = iota
-	LogEntryStderr
-	LogEntryExitCode
-	LogEntryMetadata
-	LogEntryProgress
+	LogEntryStdout string = "stdout"
 )
 
 // Line is a line of console output.
 type LogEntry struct {
 	StepUUID string `json:"step_uuid,omitempty"`
 	Time     int64  `json:"time,omitempty"`
-	Type     int    `json:"type,omitempty"`
+	Type     string `json:"type,omitempty"`
 	Line     int    `json:"line,omitempty"`
 	Data     string `json:"data,omitempty"`
 }
 
 func (l *LogEntry) String() string {
-	switch l.Type {
-	case LogEntryExitCode:
-		return fmt.Sprintf("[%s] exit code %s", l.StepUUID, l.Data)
-	default:
-		return fmt.Sprintf("[%s:L%v:%vs] %s", l.StepUUID, l.Line, l.Time, l.Data)
-	}
+	return fmt.Sprintf("[%s:L%v:%vs] %s", l.StepUUID, l.Line, l.Time, l.Data)
 }
 
 // LineWriter sends logs to the client.

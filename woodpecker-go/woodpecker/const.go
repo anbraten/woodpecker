@@ -38,11 +38,7 @@ const (
 type LogEntryType int
 
 const (
-	LogEntryStdout LogEntryType = iota
-	LogEntryStderr
-	LogEntryExitCode
-	LogEntryMetadata
-	LogEntryProgress
+	LogEntryStdout string = "stdout"
 )
 
 // StepType identifies the type of step
