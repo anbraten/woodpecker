@@ -11,6 +11,11 @@ Some versions need some changes to the server configuration or the pipeline conf
 - Deprecated uppercasing all secret env vars, instead, the value of the `secrets` property is used. [Read more](./20-usage/40-secrets.md#use-secrets-in-commands)
 - Deprecated alternative names for secrets, use `environment` with `from_secret`
 - Deprecated slice definition for env vars
+- Deprecated some forge specific configs in favor of `WOODPECKER_FORGE_...`:
+  - Use `WOODPECKER_FORGE_URL` instead of	`WOODPECKER_GITHUB_URL`, `WOODPECKER_GITLAB_URL`, `WOODPECKER_GITEA_URL`, `WOODPECKER_BITBUCKET_URL`
+  - Use `WOODPECKER_FORGE_CLIENT` instead of `WOODPECKER_GITHUB_CLIENT`, `WOODPECKER_GITLAB_CLIENT`, `WOODPECKER_GITEA_CLIENT`, `WOODPECKER_BITBUCKET_CLIENT`, `WOODPECKER_BITBUCKET_DC_CLIENT_ID`
+  - Use `WOODPECKER_FORGE_SECRET` instead of `WOODPECKER_GITHUB_SECRET`, `WOODPECKER_GITLAB_SECRET`, `WOODPECKER_GITEA_SECRET`, `WOODPECKER_BITBUCKET_SECRET`, `WOODPECKER_BITBUCKET_DC_CLIENT_SECRET`
+  - Use `WOODPECKER_FORGE_SKIP_VERIFY` instead of `WOODPECKER_GITHUB_SKIP_VERIFY`, `WOODPECKER_GITLAB_SKIP_VERIFY`, `WOODPECKER_GITEA_SKIP_VERIFY`, `WOODPECKER_BITBUCKET_SKIP_VERIFY`
 
 ## 2.0.0
 
