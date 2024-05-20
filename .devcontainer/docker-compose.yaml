@@ -38,6 +38,16 @@ services:
     extra_hosts:
       - 'host.docker.internal:host-gateway'
 
+  woodpecker:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    volumes:
+      - ../:/workspace
+    command: /bin/sh -c "while sleep 1000; do :; done"
+
 volumes:
   gitea:
   pgsql:
