@@ -299,5 +299,3 @@ spellcheck:
 docs: ## Generate docs (currently only for the cli)
 	go generate cmd/cli/app.go
 	go generate cmd/server/swagger.go
-
-endif

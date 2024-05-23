@@ -1,6 +1,6 @@
 {
   "name": "woodpecker",
-  "dockerComposeFile": "../docker-compose.yml",
+  "dockerComposeFile": "docker-compose.yaml",
   "service": "woodpecker",
   "workspaceFolder": "/workspace",
   "shutdownAction": "stopCompose",
