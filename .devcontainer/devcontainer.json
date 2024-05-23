@@ -1,6 +1,6 @@
 {
   "name": "woodpecker",
-  "dockerComposeFile": "docker-compose.yaml",
+  "dockerComposeFile": "./docker-compose.yaml",
   "service": "woodpecker",
   "workspaceFolder": "/workspace",
   "shutdownAction": "stopCompose",
@@ -17,6 +17,9 @@
         "davidanson.vscode-markdownlint",
         "streetsidesoftware.code-spell-checker"
       ]
+    },
+    "devpod": {
+      "prebuildRepository": "docker.io/woodpeckerci/devpod"
     }
   },
   "forwardPorts": [8000]

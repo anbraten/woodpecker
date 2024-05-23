@@ -44,9 +44,9 @@ services:
       dockerfile: .devcontainer/Dockerfile
     ports:
       - 8000:8000
+    command: sleep infinity
     volumes:
-      - ../:/workspace
-    command: /bin/sh -c "while sleep 1000; do :; done"
+      - ../:/workspace:cached
 
 volumes:
   gitea:
