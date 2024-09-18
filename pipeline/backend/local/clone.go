@@ -113,7 +113,7 @@ func (e *local) execClone(ctx context.Context, step *types.Step, state *workflow
 	return cmd.Start()
 }
 
-// writeNetRC write a netrc file into the home dir of a given workflow state.
+// writeNetRC writes a netrc file into the home dir of a given workflow state.
 func (e *local) writeNetRC(step *types.Step, state *workflowState) (string, error) {
 	if step.Environment["CI_NETRC_MACHINE"] == "" {
 		log.Trace().Msg("no netrc to write")

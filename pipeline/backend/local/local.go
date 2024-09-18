@@ -43,11 +43,13 @@ type workflowState struct {
 }
 
 type local struct {
-	tempDir         string
-	workflows       sync.Map
-	output          io.ReadCloser
-	pluginGitBinary string
-	os, arch        string
+	useLocalWorkspace bool
+	tempDir           string
+	repoPath          string
+	workflows         sync.Map
+	output            io.ReadCloser
+	pluginGitBinary   string
+	os, arch          string
 }
 
 // New returns a new local Backend.
@@ -80,6 +82,8 @@ func (e *local) Load(ctx context.Context) (*types.BackendInfo, error) {
 	c, ok := ctx.Value(types.CliCommand).(*cli.Command)
 	if ok {
 		e.tempDir = c.String("backend-local-temp-dir")
+		e.useLocalWorkspace = c.Bool("local")
+		e.repoPath = c.String("repo-path")
 	}
 
 	e.loadClone()
@@ -93,27 +97,37 @@ func (e *local) Load(ctx context.Context) (*types.BackendInfo, error) {
 func (e *local) SetupWorkflow(_ context.Context, _ *types.Config, taskUUID string) error {
 	log.Trace().Str("taskUUID", taskUUID).Msg("create workflow environment")
 
-	baseDir, err := os.MkdirTemp(e.tempDir, "woodpecker-local-*")
-	if err != nil {
-		return err
-	}
+	if e.useLocalWorkspace {
+		state := &workflowState{
+			stepCMDs:     make(map[string]*exec.Cmd),
+			baseDir:      e.repoPath,
+			workspaceDir: e.repoPath,
+			homeDir:      e.repoPath,
+		}
+		e.saveState(taskUUID, state)
+	} else {
+		baseDir, err := os.MkdirTemp(e.tempDir, "woodpecker-local-*")
+		if err != nil {
+			return err
+		}
 
-	state := &workflowState{
-		stepCMDs:     make(map[string]*exec.Cmd),
-		baseDir:      baseDir,
-		workspaceDir: filepath.Join(baseDir, "workspace"),
-		homeDir:      filepath.Join(baseDir, "home"),
-	}
+		state := &workflowState{
+			stepCMDs:     make(map[string]*exec.Cmd),
+			baseDir:      baseDir,
+			workspaceDir: filepath.Join(baseDir, "workspace"),
+			homeDir:      filepath.Join(baseDir, "home"),
+		}
 
-	if err := os.Mkdir(state.homeDir, 0o700); err != nil {
-		return err
-	}
+		if err := os.Mkdir(state.homeDir, 0o700); err != nil {
+			return err
+		}
 
-	if err := os.Mkdir(state.workspaceDir, 0o700); err != nil {
-		return err
-	}
+		if err := os.Mkdir(state.workspaceDir, 0o700); err != nil {
+			return err
+		}
 
-	e.saveState(taskUUID, state)
+		e.saveState(taskUUID, state)
+	}
 
 	return nil
 }
@@ -248,19 +262,21 @@ func (e *local) DestroyStep(_ context.Context, _ *types.Step, _ string) error {
 func (e *local) DestroyWorkflow(_ context.Context, _ *types.Config, taskUUID string) error {
 	log.Trace().Str("taskUUID", taskUUID).Msg("delete workflow environment")
 
-	state, err := e.getState(taskUUID)
-	if err != nil {
-		return err
-	}
+	if !e.useLocalWorkspace {
+		state, err := e.getState(taskUUID)
+		if err != nil {
+			return err
+		}
 
-	err = os.RemoveAll(state.baseDir)
-	if err != nil {
-		return err
+		err = os.RemoveAll(state.baseDir)
+		if err != nil {
+			return err
+		}
 	}
 
 	e.deleteState(taskUUID)
 
-	return err
+	return nil
 }
 
 func (e *local) getState(taskUUID string) (*workflowState, error) {

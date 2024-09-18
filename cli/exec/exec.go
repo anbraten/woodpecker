@@ -129,6 +129,11 @@ func runExec(ctx context.Context, c *cli.Command, file, repoPath string) error {
 }
 
 func execWithAxis(ctx context.Context, c *cli.Command, file, repoPath string, axis matrix.Axis) error {
+	err := c.Set("repo-path", repoPath)
+	if err != nil {
+		return err
+	}
+
 	metadata, err := metadataFromContext(ctx, c, axis)
 	if err != nil {
 		return fmt.Errorf("could not create metadata: %w", err)
@@ -173,18 +178,17 @@ func execWithAxis(ctx context.Context, c *cli.Command, file, repoPath string, ax
 	// configure volumes for local execution
 	volumes := c.StringSlice("volumes")
 	if c.Bool("local") {
-		var (
-			workspaceBase = conf.Workspace.Base
-			workspacePath = conf.Workspace.Path
-		)
+		workspaceBase := conf.Workspace.Base
 		if workspaceBase == "" {
 			workspaceBase = c.String("workspace-base")
 		}
+
+		workspacePath := conf.Workspace.Path
 		if workspacePath == "" {
 			workspacePath = c.String("workspace-path")
 		}
 
-		volumes = append(volumes, c.String("prefix")+"_default:"+workspaceBase)
+		// volumes = append(volumes, c.String("prefix")+"_default:"+workspaceBase)
 		volumes = append(volumes, repoPath+":"+path.Join(workspaceBase, workspacePath))
 	}
 
