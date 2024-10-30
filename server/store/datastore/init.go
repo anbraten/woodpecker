@@ -20,17 +20,20 @@ package datastore
 import (
 	_ "github.com/go-sql-driver/mysql"
 	_ "github.com/lib/pq"
+	_ "github.com/ncruces/go-sqlite3/driver"
+	_ "github.com/ncruces/go-sqlite3/embed"
 )
 
 // Supported database drivers
 const (
+	DriverSqlite   = "sqlite3"
 	DriverMysql    = "mysql"
 	DriverPostgres = "postgres"
 )
 
 func SupportedDriver(driver string) bool {
 	switch driver {
-	case DriverMysql, DriverPostgres:
+	case DriverMysql, DriverPostgres, DriverSqlite:
 		return true
 	default:
 		return false
