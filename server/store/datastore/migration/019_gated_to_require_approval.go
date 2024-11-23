@@ -51,22 +51,16 @@ var gatedToRequireApproval = xormigrate.Migration{
 			return err
 		}
 
-		// migrate public repos to new default require approval
-		if _, err := sess.Exec(
-			builder.Update(builder.Eq{"require_approval": RequireApprovalForks}).
-				From("repos").
-				Where(builder.Eq{"gated": false, "visibility": "public"})); err != nil {
-			return err
-		}
-
-		// migrate private repos to new default require approval
+		// migrate non-gated repos
 		if _, err := sess.Exec(
 			builder.Update(builder.Eq{"require_approval": RequireApprovalNone}).
 				From("repos").
-				Where(builder.Eq{"gated": false}.And(builder.Neq{"visibility": "public"}))); err != nil {
+				Where(builder.Eq{"gated": false})); err != nil {
 			return err
 		}
 
-		return dropTableColumns(sess, "repos", "gated")
+		// we don't drop the gated column here to use it in the migration in 3.0
+
+		return nil
 	},
 }
